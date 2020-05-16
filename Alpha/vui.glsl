@@ -136,12 +136,14 @@ void main() {
     //grid = grid*ceil(grid.y/5.); 
     vec2 rest2 = fract(ceil(grid)/2.)*2.;
     vec2 rest = fract(grid);
-    vec2 f = floor(grid);
+    vec2 f = floor(grid)+grid.x;
 
     float mich = 0.;
     if (rest.x<rest.y){mich=1.;}
     mich = step(rest.x-rest.y,0.);
-    mich = snoise((f+vec2(-mich, mich)/2.)/10.);
+    mich = snoise((f+vec2(-mich, mich)/2.)/10.)*0.5+0.5;
+    float d = .7;
+    //mich *= max(d*st.y, d*(1.-st.y));
     vec4 final_col = vec4(mich,mich,mich,1.);
     gl_FragColor = final_col;
 
