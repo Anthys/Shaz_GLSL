@@ -127,28 +127,31 @@ float plotx(vec2 st, float pct){
           smoothstep( pct, pct+0.02, st.x);
 }
 
+
+float warp(vec2 p, float factor, float n_range){
+  vec2 temp1 = p*factor;
+  vec2 temp2 = (p+vec2(5.2,1.3))*factor;
+  float n1 = snoise(temp1)*n_range;
+  float n2 = snoise(temp2)*n_range;
+  vec2 q = vec2(n1,n2);
+
+  float d = 4.;
+  vec2 temp3 = (p + q*d + vec2(1.7, 9.2))*factor;
+  vec2 temp4 = (p + q*d + vec2(8.3, 2.8))*factor;
+  float n3 = snoise(temp3)*n_range;
+  float n4 = snoise(temp4)*n_range;
+  vec2 r = vec2(n3,n4);
+
+  float final = snoise((p+r*d)*factor)*n_range;
+  return final;
+}
+
 void main() {
     vec4 final_coord = vec4(gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.z, gl_FragCoord[3]);
     vec2 st = gl_FragCoord.xy / u_resolution.xy;
-    vec2 it = cart2tri * st.xy;
-    vec4 final_col = vec4(it.x,it.y,1.,1.);
-    float pct = 0.;
-    vec2 grid = it*50.;
-    vec2 grid2 = fract(grid/1.);
-    float truc = 0.;
-    if (grid2.x < grid2.y){
-        pct = 1.;
-        truc = .5;
-    }
-    vec2 grid3 = floor(grid/1.);
-    pct = step(snoise((grid3-truc))*0.5+0.5,.8);
-    pct = snoise((grid3-truc))*0.5+0.5;
-    //pct = step(snoise(vec3((grid3-truc),u_time))*0.5+0.5,.8);
-    //pct = snoise(grid/20.);
-    //pct = plot(st,0.5);
-    //st.x *= u_resolution.x / u_resolution.y;
-    final_col = vec4(pct,pct,pct, 1.);
+    float data = snoise(st);
+    float n = warp(final_coord.xy, .003, 615.);
+    data = n;
+    vec4 final_col = vec4(data, data, data,1.);
     gl_FragColor = final_col;
-    //gl_FragColor = texture2D(u_texture_0, st) * final_col;
-    //gl_FragColor = vec4(color, 1.0);
 }
