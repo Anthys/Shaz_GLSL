@@ -117,6 +117,33 @@ float snoise(vec3 v){
                                 dot(p2,x2), dot(p3,x3) ) );
 }
 
+float rand(float n){return fract(sin(n) * 43758.5453123);}
+float rand(vec2 n) { 
+	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+float noise(float p){
+	float fl = floor(p);
+  float fc = fract(p);
+	return mix(rand(fl), rand(fl + 1.0), fc);
+}
+	
+float noise(vec2 n) {
+	const vec2 d = vec2(0.0, 1.0);
+  vec2 b = floor(n), f = smoothstep(vec2(0.0), vec2(1.0), fract(n));
+	return mix(mix(rand(b), rand(b + d.yx), f.x), mix(rand(b + d.xy), rand(b + d.yy), f.x), f.y);
+}
+
+float noise2(vec2 p){
+	vec2 ip = floor(p);
+	vec2 u = fract(p);
+	u = u*u*(3.0-2.0*u);
+	
+	float res = mix(
+		mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
+		mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
+	return res*res;
+}
+
 vec2 fade(vec2 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
 
 float cnoise(vec2 P){
@@ -151,6 +178,65 @@ float cnoise(vec2 P){
   float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
   return 2.3 * n_xy;
 }
+#define PI 3.14159265358979323846
+
+float rand4p(vec2 c){
+	return fract(sin(dot(c.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float noise4p(vec2 p, float freq ){
+	float unit = u_resolution.x/freq;
+	vec2 ij = floor(p/unit);
+	vec2 xy = mod(p,unit)/unit;
+	//xy = 3.*xy*xy-2.*xy*xy*xy;
+	xy = .5*(1.-cos(PI*xy));
+	float a = rand4p((ij+vec2(0.,0.)));
+	float b = rand4p((ij+vec2(1.,0.)));
+	float c = rand4p((ij+vec2(0.,1.)));
+	float d = rand4p((ij+vec2(1.,1.)));
+	float x1 = mix(a, b, xy.x);
+	float x2 = mix(c, d, xy.x);
+	return mix(x1, x2, xy.y);
+}
+
+float pNoise(vec2 p, int res){
+	float persistance = .5;
+	float n = 0.;
+	float normK = 0.;
+	float f = 4.;
+	float amp = 1.;
+	int iCount = 0;
+	for (int i = 0; i<50; i++){
+		n+=amp*noise4p(p, f);
+		f*=2.;
+		normK+=amp;
+		amp*=persistance;
+		if (iCount == res) break;
+		iCount++;
+	}
+	float nf = n/normK;
+	return nf*nf*nf*nf;
+}
+#define NUM_OCTAVES 5
+
+float noise4fbm(vec2 p){
+  return snoise(p)*0.5+0.5;
+}
+
+float fbm(vec2 x) {
+	float v = .0;
+	float a = 0.5;
+	vec2 shift = vec2(100);
+	// Rotate to reduce axial bias
+    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
+	for (int i = 0; i < NUM_OCTAVES; ++i) {
+		v += a * noise4fbm(x);
+		x = rot * x * 2.0 + shift;
+		a *= 0.5;
+	}
+	return v;
+}
+
 
 float plot(vec2 st, float pct){
   return  smoothstep( pct-0.02, pct, st.y) -
@@ -162,7 +248,55 @@ float plotx(vec2 st, float pct){
           smoothstep( pct, pct+0.02, st.x);
 }
 
+
+float fbm(vec2 y, float t) {
+  vec3 x = vec3(y.x, y.y, t);
+	float v = 0.0;
+	float a = 0.5;
+	vec3 shift = vec3(100);
+	for (int i = 0; i < NUM_OCTAVES; ++i) {
+		v += a * snoise(x);
+		x = x * 2.0 + shift;
+		a *= 0.5;
+	}
+	return v;
+}
+
+float noise4w2(vec2 p){
+  return fbm(p,u_time/100.);//*0.5+0.5;
+}
+
+
+float noise4w(vec2 p){
+  return fbm(p);//*0.5+0.5;
+}
+
+float noise4w1(vec2 p){
+  return cnoise(p)*0.5+0.5;
+}
+
+
+
+
 float warp(vec2 p, float factor, float n_range){
+  vec2 temp1 = p*factor;
+  vec2 temp2 = (p+vec2(5.2,1.3))*factor;
+  float n1 = noise4w(temp1)*n_range;
+  float n2 = noise4w(temp2)*n_range;
+  vec2 q = vec2(n1,n2);
+
+  float d = 4.;
+  vec2 temp3 = (p + q*d + vec2(1.7, 9.2))*factor;
+  vec2 temp4 = (p + q*d + vec2(8.3, 2.8))*factor;
+  float n3 = noise4w(temp3)*n_range;
+  float n4 = noise4w(temp4)*n_range;
+  vec2 r = vec2(n3,n4);
+
+  float final = noise4w((p+r*d)*factor)*n_range;
+  return final;
+}
+
+float warp5(vec2 p, float factor, float n_range){
   vec2 temp1 = p*factor;
   vec2 temp2 = (p+vec2(5.2,1.3))*factor;
   float n1 = cnoise(temp1)*n_range;
@@ -198,6 +332,43 @@ float warp2(vec2 p, float factor, float n_range){
   return final;
 }
 
+float warp3(vec2 p, float factor, float n_range){
+  vec2 temp1 = p*factor;
+  vec2 temp2 = (p+vec2(5.2,1.3))*factor;
+  float n1 = noise2(temp1)*n_range;
+  float n2 = noise2(temp2)*n_range;
+  vec2 q = vec2(n1,n2);
+
+  float d = 4.;
+  vec2 temp3 = (p + q*d + vec2(1.7, 9.2))*factor;
+  vec2 temp4 = (p + q*d + vec2(8.3, 2.8))*factor;
+  float n3 = noise2(temp3)*n_range;
+  float n4 = noise2(temp4)*n_range;
+  vec2 r = vec2(n3,n4);
+
+  float final = noise2((p+r*d)*factor)*n_range;
+  return final;
+}
+
+float warp4(vec2 p, float factor, float n_range){
+  vec2 temp1 = p*factor;
+  vec2 temp2 = (p+vec2(5.2,1.3))*factor;
+  int aa = 1;
+  float n1 = pNoise(temp1,aa)*n_range;
+  float n2 = pNoise(temp2,aa)*n_range;
+  vec2 q = vec2(n1,n2);
+
+  float d = 4.;
+  vec2 temp3 = (p + q*d + vec2(1.7, 9.2))*factor;
+  vec2 temp4 = (p + q*d + vec2(8.3, 2.8))*factor;
+  float n3 = pNoise(temp3,aa)*n_range;
+  float n4 = pNoise(temp4,aa)*n_range;
+  vec2 r = vec2(n3,n4);
+
+  float final = pNoise((p+r*d)*factor,aa)*n_range;
+  return final;
+}
+
 vec2 int2pos(int i, vec2 size){
   float x = mod(float(i), size.x);
   float y = floor(float(i)/size.x);
@@ -208,92 +379,6 @@ int pos2int(vec2 p, vec2 size){
   int i = int(p.x + (p.y * size.x))-int(size.x/2.);
   return i;
 }
-
-#define NUM_OCTAVES 5
-
-float fbm(float x) {
-	float v = 0.0;
-	float a = 0.5;
-	float shift = float(100);
-	for (int i = 0; i < NUM_OCTAVES; ++i) {
-		v += a * snoise(vec2(x,0.));
-		x = x * 2.0 + shift;
-		a *= 0.5;
-	}
-	return v;
-}
-
-float noise(vec2 p){
-  return snoise(p)*0.5+0.5;
-}
-
-float fbm(vec2 x) {
-	float v = .0;
-	float a = 0.5;
-	vec2 shift = vec2(100);
-	// Rotate to reduce axial bias
-    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
-	for (int i = 0; i < NUM_OCTAVES; ++i) {
-		v += a * noise(x);
-		x = rot * x * 2.0 + shift;
-		a *= 0.5;
-	}
-	return v;
-}
-
-
-float fbm(vec3 x) {
-	float v = 0.0;
-	float a = 0.5;
-	vec3 shift = vec3(100);
-	for (int i = 0; i < NUM_OCTAVES; ++i) {
-		v += a * snoise(x);
-		x = x * 2.0 + shift;
-		a *= 0.5;
-	}
-	return v;
-}
-
-float fbm(vec2 y, float t) {
-  vec3 x = vec3(y.x, y.y, t);
-	float v = 0.0;
-	float a = 0.5;
-	vec3 shift = vec3(100);
-	for (int i = 0; i < NUM_OCTAVES; ++i) {
-		v += a * snoise(x);
-		x = x * 2.0 + shift;
-		a *= 0.5;
-	}
-	return v;
-}
-
-float patternA( in vec2 p )
-{
-    vec2 q = vec2( fbm( p + vec2(0.0,0.0) ),
-                   fbm( p + vec2(5.2,1.3) ) );
-
-    return fbm( p + 4.0*q );
-}
-
-float patternB( in vec2 p )
-{
-    vec2 q = vec2( fbm( p + vec2(0.0,0.0) ),
-                   fbm( p + vec2(5.2,1.3) ) );
-
-    vec2 r = vec2( fbm( p + 4.0*q + vec2(1.7,9.2) ),
-                   fbm( p + 4.0*q + vec2(8.3,2.8) ) );
-
-    return fbm( p + 4.0*r );
-}
-
-float patternC( in vec2 p , float t)
-{
-    vec2 q = vec2( fbm( p + vec2(0.0,0.0),t),
-                   fbm( p + vec2(5.2,1.3) ,t));
-
-    return fbm( p + 4.0*q );
-}
-
 
 void main2() {
     vec2 textureSize = vec2(481.,680.);
@@ -327,10 +412,15 @@ void main(){
   vec4 coord = vec4(gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.z, gl_FragCoord[3]);
   vec2 st = coord.xy/u_resolution.xy;
   vec2 cool = coord.xy;
-  float n = patternC(st, u_time/100.);
-  //n = warp(coord.xy, .001,610.)/610.;
-  //st = (st+n)/2.+1.-u_time/10.;
-  st = (st+n)/2.;
+  int i = pos2int(cool, u_resolution);
+  float n = warp(coord.xy, .001, 615.);///615.;
+  //n = warp(coord.xy, .007, 1.);
+  i = i - int(n)+int(500.*5000.);
+  vec2 supercool = int2pos(i, u_resolution);
+  //if (supercool.x< u_time*100.){st.xy=vec2(0.);}
+  //vec2 supercool = int2pos(i, u_resolution);
+  st = supercool.xy/u_resolution.xy;
+  float t =(-cool.x+supercool.x)/100.; 
   gl_FragColor = texture2D(u_texture_0, st);
   //gl_FragColor = vec4(n,n,n,1.);
 }
