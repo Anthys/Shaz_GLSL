@@ -3,5 +3,6 @@
         "0": "./alpha.jpg",
         "1": "https://rawgit.com/actarian/plausible-brdf-shader/master/textures/noise/cloud-1.png",
         "2": "https://rawgit.com/actarian/plausible-brdf-shader/master/textures/noise/cloud-2.jpg",        
+        "3": "./trigle.png"
     }
 }

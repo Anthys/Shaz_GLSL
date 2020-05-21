@@ -286,12 +286,12 @@ float patternB( in vec2 p )
     return fbm( p + 4.0*r );
 }
 
-float patternC( in vec2 p , float t)
+float patternC( in vec2 p , float t,float t2)
 {
     vec2 q = vec2( fbm( p + vec2(0.0,0.0),t),
-                   fbm( p + vec2(5.2,1.3) ,t));
+                   fbm( p + vec2(5.2,1.3) ,t2));
 
-    return fbm( p + 4.0*q );
+    return fbm( p + 4.0*q);
 }
 
 
@@ -323,11 +323,26 @@ void main3(){
   gl_FragColor = texture2D(u_texture_0, st);
 }
 
+#define PI 3.14
+
 void main(){
   vec4 coord = vec4(gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.z, gl_FragCoord[3]);
   vec2 st = coord.xy/u_resolution.xy;
   vec2 cool = coord.xy;
-  float n = patternC(st, u_time/100.);
+  float speed = 1./100.;
+  float d = 2.;
+  float rest = mod(u_time, d);
+  float rest2 = mod(u_time, d/2.);
+  float pos = 1.;
+  if (rest<=d/2.){
+    pos = rest2*speed;
+  } else {pos = d*speed/2.-rest2*speed;}
+  //tt = ttt;
+  speed = 1./10.;
+  float alpha = mod(u_time*speed, PI*2.);
+  float x = cos(alpha);
+  float y = sin(alpha);
+  float n = patternC(st, x,y);
   //n = warp(coord.xy, .001,610.)/610.;
   //st = (st+n)/2.+1.-u_time/10.;
   st = (st+n)/2.;
