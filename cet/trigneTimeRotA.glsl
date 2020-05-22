@@ -120,7 +120,7 @@ void main(){
   //st.y += noi;
   //st += dir*noi;
   float a = atan(dir.y, dir.x)+PI*1./2.;
-  dir = vec2(cos(a), sin(a))+vec2(dir.mag());
+  dir = vec2(cos(a), sin(a))+vec2(dir);
   st += dir*noi;
   //st = st + snoise(st/1000.);
   gl_FragColor = texture2D(u_texture_3, st);

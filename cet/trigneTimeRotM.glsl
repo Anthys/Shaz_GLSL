@@ -120,7 +120,8 @@ void main(){
 
 
   float ll = length(centered);
-  float a = .1;
+  ll = exp(ll*2.)-1.;
+  float a = 1./u_time;
   st = st-normalize(centered)/2.*ll*a;
 
 

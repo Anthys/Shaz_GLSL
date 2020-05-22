@@ -118,7 +118,7 @@ void main(){
   vec2 cool = coord.xy;
   vec2 centered = 2.*(st - vec2(.5, .5));
   float l = length(centered);
-  float seuil = .9;
+  float seuil = u_time;
   if (l >=seuil){
     l=0.;
   }else{
