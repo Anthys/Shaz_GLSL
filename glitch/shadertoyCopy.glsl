@@ -16,7 +16,7 @@ void main(){
   uv_noise += floor(vec2(u_time)*vec2(1234.0,3543.0)) /vec2(64);
 
   float block_thresh = pow(fract(u_time*1236.0453), 2.0)*0.2;
-	float line_thresh = pow(fract(u_time * 2236.0453), 3.0) * 0.7;
+	float line_thresh = pow(fract(u_time * 2236.0453), 3.0) * 0.8;
 
 
   vec2 uv_r = uv, uv_g = uv, uv_b =uv;
