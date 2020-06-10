@@ -57,6 +57,7 @@ void main() {
 	float sm =  float(iter) 
 	+ log(log(3.))/log(scale) 
 	- log(log(dot(z,z)))/log(scale);
+	sm = sm/50.;
 
     gl_FragColor = vec4(f, f, f, 1.);
     gl_FragColor = vec4(sm, sm, sm, 1.);
