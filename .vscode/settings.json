@@ -1,10 +1,11 @@
 {
     "glsl-canvas.textures": {
-        "0": "./alpha.jpg",
+
+        //"0": "./alpha.jpg",
         "1": "https://rawgit.com/actarian/plausible-brdf-shader/master/textures/noise/cloud-1.png",
         "2": "https://rawgit.com/actarian/plausible-brdf-shader/master/textures/noise/cloud-2.jpg",        
-        "3": "./trigle.png",
-        "4": "./tv.jpg",
-        "5": "./pal.png",
+        //"3": "./trigle.png",
+        //"4": "./tv.jpg",
+        //"5": "./pal.png",
     }
 }

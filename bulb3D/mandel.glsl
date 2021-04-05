@@ -3,7 +3,6 @@ precision mediump float;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
-uniform sampler2D u_texture_0;
 
 #define MARCHINGITERATIONS 64
 
@@ -21,7 +20,7 @@ vec3 cosineColor( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
     return a + b*cos( 6.28318*(c*t+d) );
 }
 vec3 palette (float t) {
-    return cosineColor( t, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(0.01,0.01,0.01),vec3(0.00, 0.15, 0.20) );
+    return cosineColor( t, vec3(0.5137, 0.5137, 0.5137),vec3(0.5333, 0.5216, 0.5216),vec3(0.01,0.01,0.01),vec3(0.00, 0.15, 0.20) );
 }
 
 // distance estimator to a mandelbulb set
@@ -114,7 +113,7 @@ void main()
 	vec2 depth = trace(origin,ray);
 	
     //rendering with a fog calculation (further is darker)
-	float fog = 1.0 / (1.0 + depth.x * depth.x * 0.1);
+	float fog = 1.0;//1.0 / (1.0 + depth.x * depth.x * 0.1);
 	
     //frag color
     vec3 fc = vec3(fog);
