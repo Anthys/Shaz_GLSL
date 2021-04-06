@@ -1,7 +1,7 @@
 precision mediump float;
 
 
-#define MAX_STEPS 30
+#define MAX_STEPS 20
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -10,7 +10,28 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-
+float HexDist(vec2 p) {
+	p = abs(p);
+    
+    float c = dot(p, normalize(vec2(1,1.73)));
+    c = max(c, p.x);
+    
+    return c;
+}
+vec4 HexCoords(vec2 uv) {
+	vec2 r = vec2(1, 1.73);
+    vec2 h = r*.5;
+    
+    vec2 a = mod(uv, r)-h;
+    vec2 b = mod(uv-h, r)-h;
+    
+    vec2 gv = dot(a, a) < dot(b,b) ? a : b;
+    
+    float x = atan(gv.x, gv.y);
+    float y = .5-HexDist(gv);
+    vec2 id = uv-gv;
+    return vec4(x, y, id.x,id.y);
+}
 
 
 float sd_rec( vec3 p, vec3 b )
@@ -54,15 +75,15 @@ float sdSphere( vec3 p, vec3 b )
     return d;
 }
 
-
 float opRep( in vec3 p, in vec3 c , float s )
 {
+    vec2 svec = vec2(1., sqrt(3.));
     vec3 q = mod(p+0.5*c,c)-0.5*c;
-    //if (int(mod(p.z/.5,2.))==1){
-    //if (int(mod(p.z,2.))==1){
-    //if (p.z<2.4){
+    vec4 cool = HexCoords(p.xy);
+    q.xy = cool.xy;
     return sdSphere(q,vec3(s,s,s));
 }
+
 float getDist(vec3 p) {
     return opRep(p,vec3(1,1,1),0.04);
 }

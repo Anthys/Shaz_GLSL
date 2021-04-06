@@ -1,7 +1,7 @@
 precision mediump float;
 
 
-#define MAX_STEPS 30
+#define MAX_STEPS 40
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -81,7 +81,7 @@ float rayMarch(vec3 ro, vec3 rd) {
 
 void main()
 {
-    float u_time = 0.;
+    //float u_time = 0.;
     vec2 uv = (gl_FragCoord.xy-.5*u_resolution.xy)/u_resolution.y;
     float speed = 0.05 ; 
     mat2 mat = mat2(vec2(cos(u_time*speed), sin(u_time*speed)), 		// first column (not row!)    

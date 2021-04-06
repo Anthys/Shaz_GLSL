@@ -1,7 +1,7 @@
 precision mediump float;
 
 
-#define MAX_STEPS 30
+#define MAX_STEPS 40
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -16,7 +16,7 @@ uniform float u_time;
 float sd_rec( vec3 p, vec3 b )
 {  
     //p.y += 1.*sin(u_time*.2);
-    p.y += .2*u_time;
+    //p.y += .2*u_time;
     //p.x += u_time*.5;
     //if (int(mod(p.z/.5,1.))==0){
     p = mod(p+vec3(.5), vec3(1))-vec3(.5);
