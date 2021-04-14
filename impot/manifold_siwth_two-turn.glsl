@@ -1,7 +1,7 @@
 precision mediump float;
 
 
-#define MAX_STEPS 40
+#define MAX_STEPS 30
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -111,8 +111,10 @@ float sdBoxFrame( vec3 p, vec3 b, float e )
 float sdSphere( vec3 p, vec3 b )
 {  
     float a = sdArrow(p);
+    float c = sdSphere2(p, b);
     float e = sdBoxFrame(p, vec3(.0195), .001);
-    float d;
+    float d = min(a,c);
+    d = min(d, e*10.);
     d = min(a,e);
     return d;
 }
@@ -123,11 +125,11 @@ float opRep( in vec3 p, in vec3 c , float s )
     vec3 q;
     vec4 cool = HexCoords(p.xy);
     q.xy = cool.xy;
-    q.z = mod(p.z+.5, 1.);-.5;
-    q.z = p.z;
+    q.z = mod(p.z+5., .5)-.5;
+
     
-    float n = float(int(mod(p.z*2., 6.)));
-    float angle = 3.14/3.*n;
+    float n = float(int(mod(p.z*2., 3.)));
+    float angle = 3.14/3.*n*2.;
     float temp = cos(angle)*q.x - sin(angle)*q.y;
     q.y = sin(angle)*q.x + cos(angle)*q.y;
     q.x = temp;
@@ -153,7 +155,7 @@ float rayMarch(vec3 ro, vec3 rd) {
 
 void main()
 {
-    float u_time = 3.;
+    //float u_time = 0.;
     vec2 uv = (gl_FragCoord.xy-.5*u_resolution.xy)/u_resolution.y;
     float speed = 0.05 ; 
     //mat2 mat = mat2(vec2(cos(u_time*speed), sin(u_time*speed)), 		// first column (not row!)    
